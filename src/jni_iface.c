@@ -133,7 +133,7 @@ JNIEXPORT jint JNICALL Java_com_cleansine_sound_provider_SimpleMixer_nRead
     return (jint) ret;
 }
 
-JNIEXPORT jint JNICALL Java_com_cleansine_sound_provider_SimpleMixer_nGetBufferSize
+JNIEXPORT jint JNICALL Java_com_cleansine_sound_provider_SimpleMixer_nGetBufferBytes
 	(JNIEnv* env, jclass clazz, jlong nativePtr, jboolean isSource)
 {
     PcmInfo* info = (PcmInfo*) (UINT_PTR) nativePtr;
@@ -253,4 +253,11 @@ JNIEXPORT jobject JNICALL Java_com_cleansine_sound_provider_SimpleMixerProvider_
 
     TRACE1("%s done.\n", __FUNCTION__);
     return mixerInfo;
+}
+
+
+JNIEXPORT jboolean JNICALL Java_com_cleansine_sound_provider_SimpleMixerProvider_nInit
+  (JNIEnv *env, jclass clazz)
+{
+	return (jboolean) 1;
 }

@@ -372,6 +372,7 @@ int setSWParams(PcmInfo* info) {
 /******** OPEN/CLOSE **********/
 static snd_output_t* OUTPUT = NULL;
 
+// returns either pointer or NULL
 PcmInfo* doOpen(const char* deviceID, int isSource, int enc, int rate, int sampleBits,
                    int frameBytes, int channels, int isSigned, int isBigEndian, int bufferBytes)
 {
@@ -383,7 +384,7 @@ PcmInfo* doOpen(const char* deviceID, int isSource, int enc, int rate, int sampl
         ret = snd_output_stdio_attach(&OUTPUT, stdout, 0);
         if (ret < 0) {
             ERROR2("%s: Output failed: %s\n",  __FUNCTION__, snd_strerror(ret));
-            return 0;
+            return NULL;
         }
     }
 #endif

@@ -9,6 +9,14 @@ extern "C" {
 #endif
 /*
  * Class:     com_cleansine_sound_provider_SimpleMixerProvider
+ * Method:    nInit
+ * Signature: ()Z
+ */
+JNIEXPORT jboolean JNICALL Java_com_cleansine_sound_provider_SimpleMixerProvider_nInit
+  (JNIEnv *, jclass);
+
+/*
+ * Class:     com_cleansine_sound_provider_SimpleMixerProvider
  * Method:    nGetMixerCnt
  * Signature: ()I
  */
