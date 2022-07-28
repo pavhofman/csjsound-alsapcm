@@ -24,12 +24,14 @@
 #define TRACE2(string, p1, p2)                { fprintf(stdout, (string), (p1), (p2)); fflush(stdout); }
 #define TRACE3(string, p1, p2, p3)            { fprintf(stdout, (string), (p1), (p2), (p3)); fflush(stdout); }
 #define TRACE4(string, p1, p2, p3, p4)        { fprintf(stdout, (string), (p1), (p2), (p3), (p4)); fflush(stdout); }
+#define TRACE5(string, p1, p2, p3, p4, p5)    { fprintf(stdout, (string), (p1), (p2), (p3), (p4), (p5)); fflush(stdout); }
 #else
 #define TRACE0(string)
 #define TRACE1(string, p1)
 #define TRACE2(string, p1, p2)
 #define TRACE3(string, p1, p2, p3)
 #define TRACE4(string, p1, p2, p3, p4)
+#define TRACE5(string, p1, p2, p3, p4, p5)
 #endif
 
 #endif  // DEBUG_INCLUDED

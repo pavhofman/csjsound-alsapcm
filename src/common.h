@@ -9,6 +9,9 @@
 #include "types.h"
 #include "debug.h"
 
+// value used in java
+#define NOT_SPECIFIED   -1
+
 typedef struct {
 	// used when walking descs to find a desc with required idx
 	int down_counter;

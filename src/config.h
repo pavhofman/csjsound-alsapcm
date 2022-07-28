@@ -14,11 +14,6 @@
 
 #define TRIES_TO_RECOVER        3
 
-// maximum number of channels that is listed in the formats. If more, than
-// just -1 for channel count is used.
-// snd-aloop has max 32 channels, 32 is a suitable value
-#define MAX_LISTED_CHANNELS 32
-
 // config names ignored when enumerating pcm devices
 static const char *IGNORED_CONFIGS[] = {
 			"hw", "plughw", "plug", "dsnoop", "tee",

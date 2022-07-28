@@ -1,3 +1,4 @@
+#include <limits.h>
 #include "common.h"
 
 static void alsaDbgOut(const char *file, int line, const char *function, int err, const char *fmt, ...)
@@ -26,6 +27,11 @@ void initAlsalib()
     }
 }
 
+inline static const char* getDirStr(int isSource)
+{
+	return isSource? "PLAY" : "CAPT";
+}
+
 int openDeviceID(const char* deviceID, snd_pcm_t** handle, int isSource, int logError)
 {
     initAlsalib();
@@ -41,10 +47,10 @@ int openDeviceID(const char* deviceID, snd_pcm_t** handle, int isSource, int log
 	snd_lib_error_set_handler(&alsaDbgOut);
     if (ret != 0) {
         if (logError) {
-            ERROR3("%s: snd_pcm_open of deviceID %s: %s\n", __FUNCTION__, deviceID, snd_strerror(ret));
+            ERROR4("%s: snd_pcm_open of dev %s %s: %s\n", __FUNCTION__, deviceID, getDirStr(isSource), snd_strerror(ret));
         } else {
             // only trace
-            TRACE3("%s: snd_pcm_open of deviceID %s: %s\n", __FUNCTION__, deviceID, snd_strerror(ret));
+            TRACE4("%s: snd_pcm_open of dev %s %s: %s\n", __FUNCTION__, deviceID, getDirStr(isSource), snd_strerror(ret));
         }
         *handle = NULL;
     }
@@ -167,6 +173,20 @@ INT32 doFillDesc(MixerDesc* desc)
         return FALSE;
     return (desc->down_counter == 0)? TRUE: FALSE;
 }
+static void addFmtForChannels(AddFmtMethodInfo* mInfo, int sampleSignBits, int sampleBytes,
+			int channelsMin, int channelsMax, int rate, int enc, int isSigned, int isBigEndian)
+{
+    clbkAddAudioFmt(mInfo, sampleSignBits, sampleBytes * channelsMin, channelsMin, rate, enc, isSigned, isBigEndian);
+    if (channelsMax > channelsMin) {
+        // we do not know the actual number of channels - only format with channelsMin, channelsMax, and unspecified
+        clbkAddAudioFmt(mInfo, sampleSignBits, sampleBytes * channelsMax, channelsMax, rate, enc, isSigned, isBigEndian);
+        // unspecified channels => unspecified frameBytes
+        clbkAddAudioFmt(mInfo, sampleSignBits, NOT_SPECIFIED, NOT_SPECIFIED, rate, enc, isSigned, isBigEndian);
+        // stereo is important
+        if (channelsMin == 1 && channelsMax > 2)
+            clbkAddAudioFmt(mInfo, sampleSignBits, sampleBytes * 2, 2, rate, enc, isSigned, isBigEndian);
+    }
+}
 
 void doGetFmts(const char* deviceID, int isSource, AddFmtMethodInfo* mInfo) {
     // opening the device to find out supported formats
@@ -181,41 +201,29 @@ void doGetFmts(const char* deviceID, int isSource, AddFmtMethodInfo* mInfo) {
     snd_pcm_hw_params_alloca(&hwParams);
     int ret = snd_pcm_hw_params_any(handle, hwParams);
     if (ret < 0) {
-        ERROR2("%s: snd_pcm_hw_params_any: %d\n", __FUNCTION__, ret);
+        ERROR4("%s: dev %s %s: snd_pcm_hw_params_any: %d\n", __FUNCTION__, deviceID, getDirStr(isSource), ret);
         goto end;
     }
 
-    unsigned int channelsMin, channelsMax;
-    ret = snd_pcm_hw_params_get_channels_min(hwParams, &channelsMin);
-    if (ret != 0) {
-        ERROR2("%s: snd_pcm_hw_params_get_channels_min: %d\n", __FUNCTION__, ret);
-        goto end;
-    }
-    ret = snd_pcm_hw_params_get_channels_max(hwParams, &channelsMax);
-    if (ret != 0) {
-        ERROR2("%s: snd_pcm_hw_params_get_channels_max: %d\n", __FUNCTION__, ret);
-        goto end;
-    }
-
+    // fetching alsa format
     snd_pcm_hw_params_get_format_mask(hwParams, formatMask);
-    int rate = -1;
     snd_pcm_format_t format;
     for (format = 0; format <= SND_PCM_FORMAT_LAST; format++) {
-        TRACE2("%s: testing format %s\n", __FUNCTION__, snd_pcm_format_name(format));
+        TRACE4("%s: dev %s %s: testing format %s\n", __FUNCTION__, deviceID, getDirStr(isSource), snd_pcm_format_name(format));
         if (!snd_pcm_format_mask_test(formatMask, format)) {
-            TRACE2("%s: format mask does not fit format %s\n", __FUNCTION__, snd_pcm_format_name(format));
+            TRACE4("%s: dev %s %s: format mask does not fit format %s\n", __FUNCTION__, deviceID, getDirStr(isSource), snd_pcm_format_name(format));
             continue;
         }
 
         // we support only PCM encoding
         if (snd_pcm_format_linear(format) < 1) {
-            TRACE2("%s: skipping nonlinear format %s\n", __FUNCTION__, snd_pcm_format_name(format));
+            TRACE4("%s: dev %s %s: skipping nonlinear format %s\n", __FUNCTION__, deviceID, getDirStr(isSource), snd_pcm_format_name(format));
             continue;
         }
 	    int sampleBytes = (snd_pcm_format_physical_width(format) + 7) / 8;
 	    if (sampleBytes <= 0) {
-            TRACE2("%s: snd_pcm_format_physical_width: nonpositive physical width for format %s\n",
-                    __FUNCTION__, snd_pcm_format_name(format));
+            TRACE4("%s: dev %s %s: snd_pcm_format_physical_width: nonpositive physical width for format %s\n",
+                    __FUNCTION__, deviceID, getDirStr(isSource), snd_pcm_format_name(format));
             continue;
 	    }
 
@@ -223,17 +231,42 @@ void doGetFmts(const char* deviceID, int isSource, AddFmtMethodInfo* mInfo) {
 	    int enc = 0; // we support only PCM (=0)
 	    int isSigned = (snd_pcm_format_signed(format) > 0);
 	    int isBigEndian = (snd_pcm_format_big_endian(format) > 0);
-        if (channelsMax - channelsMin > MAX_LISTED_CHANNELS) {
-            // for large number of channels - only format with channelsMin, channelsMax, and unspecified
-            clbkAddAudioFmt(mInfo, sampleSignBits, sampleBytes * channelsMin, channelsMin, rate, enc, isSigned, isBigEndian);
-            clbkAddAudioFmt(mInfo, sampleSignBits, sampleBytes * channelsMax, channelsMax, rate, enc, isSigned, isBigEndian);
-            // unspecified channels => unspecified frameBytes
-            clbkAddAudioFmt(mInfo, sampleSignBits, -1, -1, rate, enc, isSigned, isBigEndian);
-        } else {
-            // individual format for all possible channel counts
-            for (unsigned int channels = channelsMin; channels <= channelsMax; channels++) {
-                clbkAddAudioFmt(mInfo, sampleSignBits, sampleBytes * channels, channels, rate, enc, isSigned, isBigEndian);
-            }
+
+	    // fetching rates
+	    unsigned int rateMin, rateMax;
+		ret = snd_pcm_hw_params_get_rate_min(hwParams, &rateMin, 0);
+        if (ret != 0) {
+            ERROR4("%s: dev %s %s: snd_pcm_hw_params_get_rate_min: %d\n", __FUNCTION__, deviceID, getDirStr(isSource), ret);
+            goto end;
+        }
+		ret = snd_pcm_hw_params_get_rate_max(hwParams, &rateMax, 0);
+        if (ret != 0) {
+            ERROR4("%s: dev %s %s: snd_pcm_hw_params_get_rate_max: %d\n", __FUNCTION__, deviceID, getDirStr(isSource), ret);
+            goto end;
+        }
+        TRACE5("%s: dev %s %s: rateMin=%u, rateMax=%u\n", __FUNCTION__, deviceID, getDirStr(isSource), rateMin, rateMax);
+        // Rate is passed as int, but alsa returns UINT_MAX from plug plugin. Clamping to singed int
+        if (rateMax > INT_MAX)
+            rateMax = INT_MAX;
+
+        // fetching channels
+        unsigned int channelsMin, channelsMax;
+        ret = snd_pcm_hw_params_get_channels_min(hwParams, &channelsMin);
+        if (ret != 0) {
+            ERROR4("%s: dev %s %s: snd_pcm_hw_params_get_channels_min: %d\n", __FUNCTION__, deviceID, getDirStr(isSource), ret);
+            goto end;
+        }
+        ret = snd_pcm_hw_params_get_channels_max(hwParams, &channelsMax);
+        if (ret != 0) {
+            ERROR4("%s: dev %s %s: snd_pcm_hw_params_get_channels_max: %d\n", __FUNCTION__, deviceID, getDirStr(isSource), ret);
+            goto end;
+        }
+	    TRACE5("%s: dev %s %s: channelsMin=%d, channelsMax=%d\n", __FUNCTION__, deviceID, getDirStr(isSource), channelsMin, channelsMax);
+
+        addFmtForChannels(mInfo, sampleSignBits, sampleBytes, channelsMin, channelsMax, rateMin, enc, isSigned, isBigEndian);
+        if (rateMax > rateMin) {
+            addFmtForChannels(mInfo, sampleSignBits, sampleBytes, channelsMin, channelsMax, rateMax, enc, isSigned, isBigEndian);
+            addFmtForChannels(mInfo, sampleSignBits, sampleBytes, channelsMin, channelsMax, NOT_SPECIFIED, enc, isSigned, isBigEndian);
         }
     }
   end:
@@ -464,7 +497,7 @@ PcmInfo* doOpen(const char* deviceID, int isSource, int enc, int rate, int sampl
     } else {
         // all OK, setting to non-blocking mode
         snd_pcm_nonblock(info->handle, 1);
-        TRACE3("%s: device %s opened OK for %s\n", __FUNCTION__, deviceID, isSource? "writing" : "reading");
+        TRACE3("%s: device %s %s opened OK\n", __FUNCTION__, deviceID, getDirStr(isSource));
     }
     return info;
 }
