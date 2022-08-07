@@ -3,7 +3,7 @@
 
 static void alsaDbgOut(const char *file, int line, const char *function, int err, const char *fmt, ...)
 {
-#ifdef USE_ERROR
+#ifdef OUTPUT_ALSA_ERRORS
     va_list args;
     va_start(args, fmt);
     printf("%s:%d function %s: error %d: %s\n", file, line, function, err, snd_strerror(err));
@@ -706,15 +706,13 @@ int doWrite(PcmInfo* info, char* buffer, int bytes) {
 }
 
 
-int doDrain(PcmInfo* info) {
+void doDrain(PcmInfo* info) {
     snd_pcm_state_t state;
 
     int ret = snd_pcm_drain(info->handle);
     if (ret != 0) {
         ERROR2("%s: snd_pcm_drain: %s\n", __FUNCTION__, snd_strerror(ret));
-        return FALSE;
     }
-    return TRUE;
 }
 
 void doFlush(PcmInfo* info, int isSource) {
@@ -731,7 +729,6 @@ void doFlush(PcmInfo* info, int isSource) {
     if (info->isRunning) {
         ret = doStart(info, isSource);
     }
-    return;
 }
 
 int doGetAvailBytes(PcmInfo* info, int isSource) {
@@ -764,7 +761,7 @@ INT64 doGetBytePos(PcmInfo* info, int isSource, INT64 javaBytePos) {
         } else {
             int availBytes = availFrames * info->frameBytes;
             if (isSource){
-                result =(INT64) (javaBytePos - info->bufferBytes + availBytes);
+                result =(INT64) (javaBytePos - (info->bufferBytes - availBytes));
             } else {
                 result = (INT64) (javaBytePos + availBytes);
             }

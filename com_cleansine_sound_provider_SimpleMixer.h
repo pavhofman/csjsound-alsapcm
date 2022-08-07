@@ -82,9 +82,9 @@ JNIEXPORT jint JNICALL Java_com_cleansine_sound_provider_SimpleMixer_nGetAvailBy
 /*
  * Class:     com_cleansine_sound_provider_SimpleMixer
  * Method:    nDrain
- * Signature: (J)Z
+ * Signature: (J)V
  */
-JNIEXPORT jboolean JNICALL Java_com_cleansine_sound_provider_SimpleMixer_nDrain
+JNIEXPORT void JNICALL Java_com_cleansine_sound_provider_SimpleMixer_nDrain
   (JNIEnv *, jclass, jlong);
 
 /*

@@ -55,7 +55,7 @@ int doStart(PcmInfo* info, int isSource);
 int doStop(PcmInfo* info, int isSource);
 int doRead(PcmInfo* info, char* buffer, int bytes);
 int doWrite(PcmInfo* info, char* buffer, int bytes);
-int doDrain(PcmInfo* info);
+void doDrain(PcmInfo* info);
 void doFlush(PcmInfo* info, int isSource);
 int doGetAvailBytes(PcmInfo* info, int isSource);
 INT64 doGetBytePos(PcmInfo* info, int isSource, INT64 javaBytePos);

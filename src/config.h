@@ -4,6 +4,8 @@
 #define USE_ERROR
 //#define USE_TRACE
 
+//#define OUTPUT_ALSA_ERRORS
+
 // maximum string length (deviceID, name, description)
 #define STR_LEN                 200
 

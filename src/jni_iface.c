@@ -144,15 +144,13 @@ JNIEXPORT jint JNICALL Java_com_cleansine_sound_provider_SimpleMixer_nGetBufferB
     return (jint) ret;
 }
 
-JNIEXPORT jboolean JNICALL Java_com_cleansine_sound_provider_SimpleMixer_nDrain
+JNIEXPORT void JNICALL Java_com_cleansine_sound_provider_SimpleMixer_nDrain
 	(JNIEnv* env, jclass clazz, jlong nativePtr)
 {
     PcmInfo* info = (PcmInfo*) (UINT_PTR) nativePtr;
-    int ret = FALSE;
     if (info) {
-        ret = doDrain(info)? TRUE: FALSE;
+        doDrain(info);
     }
-    return (jboolean) ret;
 }
 
 
