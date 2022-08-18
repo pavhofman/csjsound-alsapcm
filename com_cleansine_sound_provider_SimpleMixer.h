@@ -65,7 +65,7 @@ JNIEXPORT jint JNICALL Java_com_cleansine_sound_provider_SimpleMixer_nWrite
 
 /*
  * Class:     com_cleansine_sound_provider_SimpleMixer
- * Method:    nGetBufferSize
+ * Method:    nGetBufferBytes
  * Signature: (JZ)I
  */
 JNIEXPORT jint JNICALL Java_com_cleansine_sound_provider_SimpleMixer_nGetBufferBytes

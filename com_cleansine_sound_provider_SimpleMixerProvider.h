@@ -7,13 +7,23 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#undef com_cleansine_sound_provider_SimpleMixerProvider_LIB_LOG_LEVEL_ERROR
+#define com_cleansine_sound_provider_SimpleMixerProvider_LIB_LOG_LEVEL_ERROR 0L
+#undef com_cleansine_sound_provider_SimpleMixerProvider_LIB_LOG_LEVEL_WARN
+#define com_cleansine_sound_provider_SimpleMixerProvider_LIB_LOG_LEVEL_WARN 1L
+#undef com_cleansine_sound_provider_SimpleMixerProvider_LIB_LOG_LEVEL_INFO
+#define com_cleansine_sound_provider_SimpleMixerProvider_LIB_LOG_LEVEL_INFO 2L
+#undef com_cleansine_sound_provider_SimpleMixerProvider_LIB_LOG_LEVEL_DEBUG
+#define com_cleansine_sound_provider_SimpleMixerProvider_LIB_LOG_LEVEL_DEBUG 3L
+#undef com_cleansine_sound_provider_SimpleMixerProvider_LIB_LOG_LEVEL_TRACE
+#define com_cleansine_sound_provider_SimpleMixerProvider_LIB_LOG_LEVEL_TRACE 4L
 /*
  * Class:     com_cleansine_sound_provider_SimpleMixerProvider
  * Method:    nInit
- * Signature: ()Z
+ * Signature: (ILjava/lang/String;)Z
  */
 JNIEXPORT jboolean JNICALL Java_com_cleansine_sound_provider_SimpleMixerProvider_nInit
-  (JNIEnv *, jclass);
+  (JNIEnv *, jclass, jint, jstring);
 
 /*
  * Class:     com_cleansine_sound_provider_SimpleMixerProvider
