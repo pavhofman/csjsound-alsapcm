@@ -180,11 +180,14 @@ static void addFmtForChannels(AddFmtMethodInfo* mInfo, int sampleSignBits, int s
     if (channelsMax > channelsMin) {
         // we do not know the actual number of channels - only format with channelsMin, channelsMax, and unspecified
         clbkAddAudioFmt(mInfo, sampleSignBits, sampleBytes * channelsMax, channelsMax, rate, enc, isSigned, isBigEndian);
-        // unspecified channels => unspecified frameBytes
-        clbkAddAudioFmt(mInfo, sampleSignBits, NOT_SPECIFIED, NOT_SPECIFIED, rate, enc, isSigned, isBigEndian);
-        // stereo is important
-        if (channelsMin == 1 && channelsMax > 2)
+        if (channelsMin == 1 && channelsMax > 2) {
+            // stereo is important
             clbkAddAudioFmt(mInfo, sampleSignBits, sampleBytes * 2, 2, rate, enc, isSigned, isBigEndian);
+        }
+        if (channelsMax > channelsMin + 1 && channelsMax > 3) {
+            // there can be some channels in between which have not been added yet - unspecified channels => unspecified frameBytes
+            clbkAddAudioFmt(mInfo, sampleSignBits, NOT_SPECIFIED, NOT_SPECIFIED, rate, enc, isSigned, isBigEndian);
+        }
     }
 }
 
