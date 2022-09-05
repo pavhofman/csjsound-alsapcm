@@ -1,5 +1,5 @@
 # csjsound-alsapcm
-Alsa PCM dynamic library for https://github.com/pavhofman/csjsound-provider
+Alsa PCM dynamic library for https://github.com/pavhofman/csjsound-provider . Only PCM devices are listed (as opposite to the standard OpenJDK alsa provider which lists only hw cards).
 
 ## Building
 For amd64:
