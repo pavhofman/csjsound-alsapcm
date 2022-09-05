@@ -255,7 +255,8 @@ JNIEXPORT jobject JNICALL Java_com_cleansine_sound_provider_SimpleMixerProvider_
 
 
 JNIEXPORT jboolean JNICALL Java_com_cleansine_sound_provider_SimpleMixerProvider_nInit
-  (JNIEnv *env, jclass clazz, jint logLevelID, jstring logTarget)
+  (JNIEnv *env, jclass clazz, jint logLevelID, jstring logTarget, jintArray rates, jintArray channels,
+   jint maxRateLimit, jint maxChannelsLimit)
 {
 	// logging is compiled-in, log params are ignored
 	return (jboolean) 1;

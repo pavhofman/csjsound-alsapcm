@@ -17,13 +17,17 @@ extern "C" {
 #define com_cleansine_sound_provider_SimpleMixerProvider_LIB_LOG_LEVEL_DEBUG 3L
 #undef com_cleansine_sound_provider_SimpleMixerProvider_LIB_LOG_LEVEL_TRACE
 #define com_cleansine_sound_provider_SimpleMixerProvider_LIB_LOG_LEVEL_TRACE 4L
+#undef com_cleansine_sound_provider_SimpleMixerProvider_MAX_RATE_LIMIT
+#define com_cleansine_sound_provider_SimpleMixerProvider_MAX_RATE_LIMIT 384000L
+#undef com_cleansine_sound_provider_SimpleMixerProvider_MAX_CHANNELS_LIMIT
+#define com_cleansine_sound_provider_SimpleMixerProvider_MAX_CHANNELS_LIMIT 8L
 /*
  * Class:     com_cleansine_sound_provider_SimpleMixerProvider
  * Method:    nInit
- * Signature: (ILjava/lang/String;)Z
+ * Signature: (ILjava/lang/String;[I[III)Z
  */
 JNIEXPORT jboolean JNICALL Java_com_cleansine_sound_provider_SimpleMixerProvider_nInit
-  (JNIEnv *, jclass, jint, jstring);
+  (JNIEnv *, jclass, jint, jstring, jintArray, jintArray, jint, jint);
 
 /*
  * Class:     com_cleansine_sound_provider_SimpleMixerProvider
